@@ -1,5 +1,6 @@
 import cv2
 from enum import Enum
+from csv import writer
 
 
 class CocoPart(Enum):
@@ -272,7 +273,30 @@ class BodyPart:
 
     def __repr__(self):
         return self.__str__()
-        
+
+def save_humans_to_csv(csv, humans, frame, npimg):
+    image_h, image_w = npimg.shape[:2]
+    _tmp_array = [frame]
+    for human in humans:
+        for i in range(CocoPart.Background.value):
+            if i not in human.body_parts.keys():
+                _tmp_array.append((None, None))
+                continue
+            body_part = human.body_parts[i]
+            center = (int(body_part.x * image_w + 0.5), int(body_part.y * image_h + 0.5))
+            _tmp_array.append([center[0], center[1]])
+    append_list_as_row(csv, _tmp_array)
+    _tmp_array = [frame]
+    
+
+def append_list_as_row(file_name, list_of_elem):
+    # Open file in append mode
+    with open(file_name, 'a+', newline='') as write_obj:
+        # Create a writer object from csv module
+        csv_writer = writer(write_obj)
+        # Add contents of list as last row in the csv file
+        csv_writer.writerow(list_of_elem) 
+
 CocoColors = [[255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0], [85, 255, 0], [0, 255, 0],
               [0, 255, 85], [0, 255, 170], [0, 255, 255], [0, 170, 255], [0, 85, 255], [0, 0, 255], [85, 0, 255],
               [170, 0, 255], [255, 0, 255], [255, 0, 170], [255, 0, 85]]
